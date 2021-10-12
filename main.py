@@ -7,6 +7,7 @@ dcv_zone = 0
 dcv_auto_type = 0
 dcv_suminsured = 0
 
+
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Вітаю, {0}!".format(
@@ -18,11 +19,11 @@ def start(message):
     kb.add(itembtn1, itembtn2, itembtn3)
     bot.send_message(
         message.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
-    # log(message)
+    log(message)
 
 
 @bot.callback_query_handler(func=lambda call:'dcv' in call.data)
-def dcv_zone_handler(call):
+def dcv_handler(call):
     '''обработчик нажатия на кнопку ДЦВ'''
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='Зона 1', callback_data='z1')
@@ -30,15 +31,15 @@ def dcv_zone_handler(call):
     btn3 = types.InlineKeyboardButton(text='Зона 3', callback_data='z3')
     kb.add(btn1, btn2, btn3)
     bot.send_message(
-        call.from_user.id, "<b>За ДЦВ маршрутні автобуси та ТЗ, що використовуються в якості ТАКСІ, на страхування НЕ ПРИЙМАЮТЬСЯ.</b>", parse_mode='HTML')
+        call.from_user.id, "<b>УВАГА! За ДЦВ маршрутні автобуси та ТЗ, що використовуються в якості ТАКСІ, на страхування НЕ ПРИЙМАЮТЬСЯ.</b>", parse_mode='HTML')
     bot.send_message(
         call.from_user.id, "*Виберіть зону:* \nКиїв, Київська обл\. \- *1* \nХарків, Одеса, Дніпро, Львів, Запоріжжя, Кривий Ріг, ТЗ з іноземною реєстрацією \- *2* \nІнші населені пункти \- *3*",
         reply_markup=kb, parse_mode='MarkdownV2'
     )
-    # log(call)
+    
 
-@bot.callback_query_handler(func=lambda call: 'z1' or 'z2' or 'z3' in call.data)
-def dcv_auto_type_handler(call):
+@bot.callback_query_handler(func=lambda call: ('z1' in call.data) or ('z2' in call.data) or ('z3' in call.data))
+def dcv_zone_handler(call):
     '''обрабатывает выбор зоны для ДЦВ'''
     global dcv_zone
     if 'z1' in call.data:
@@ -47,7 +48,8 @@ def dcv_auto_type_handler(call):
         dcv_zone = 2
     else:
         dcv_zone = 3
-    # print("Вибрано зону " + dcv_zone)
+    print("Вибрано зону: %d"%(dcv_zone))
+    bot.send_message(call.from_user.id, "Вибрано зону: %d"%(dcv_zone))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(
         text='A1, A2, F, B1, B2, B3, E', callback_data='t1')
@@ -58,15 +60,15 @@ def dcv_auto_type_handler(call):
         call.from_user.id, "*Виберіть тип ТЗ*", reply_markup=kb, parse_mode='MarkdownV2'
     )
 
-@bot.callback_query_handler(func=lambda call: 't1' or 't2' in call.data)
-def dcv_suminsured_handler(call):
+@bot.callback_query_handler(func=lambda call: ('t1' in call.data) or ('t2' in call.data))
+def dcv_autotype_handler(call):
     '''обрабатывает ввод типа ТС для ДЦВ'''
     global dcv_auto_type
     if 't1' in call.data:
         dcv_auto_type = 1
     else:
         dcv_auto_type = 2
-    # print("Вибрано тип авто " + dcv_auto_type)
+    print("Вибрано тип авто %d"%(dcv_auto_type))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='50 000', callback_data='50000')
     btn3 = types.InlineKeyboardButton(text='100 000', callback_data='100000')
@@ -78,13 +80,117 @@ def dcv_suminsured_handler(call):
     bot.send_message(call.from_user.id, "*Виберіть страхову суму*", reply_markup=kb, parse_mode='MarkdownV2')
 
 
-# def log(message):
-#     print("\n ------")
-#     from datetime import datetime
-#     print(datetime.now())
-#     print("Сообщение от {0} {1}. (id = {2}) \nТекст = {3}".format(message.from_user.first_name,
-#                                                                   message.from_user.last_name,
-#                                                                   str(message.from_user.id), message.text))
+@bot.callback_query_handler(func=lambda call:('50000' in call.data) or ('100000' in call.data) or ('200000' in call.data) or ('300000' in call.data) or ('400000' in call.data) or ('500000' in call.data))
+def dcv_suminsured_handler(call):
+    '''обрабатывает ввод страховой суммы для ДЦВ'''
+    global dcv_suminsured
+    if '50000' in call.data:
+        dcv_suminsured = 1
+    elif '100000' in call.data:
+        dcv_suminsured = 2
+    elif '200000' in call.data:
+        dcv_suminsured = 3
+    elif '300000' in call.data: 
+        dcv_suminsured = 4
+    elif '400000' in call.data:
+        dcv_suminsured = 5
+    elif '500000' in call.data:
+        dcv_suminsured = 6
+
+def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_suminsured):
+    import json
+    with open('DCV.json') as f:
+        data = json.load(f)
+    if zone == 1:
+        if type == 1:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+        elif type == 2:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+    elif zone == 2:
+        if type == 1:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+        elif type == 2:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+    elif zone == 3:
+        if type == 1:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+        elif type == 2:
+            if sum_insured == '50000':
+                pass
+            elif sum_insured == '100000':
+                pass
+            elif sum_insured == '200000':
+                pass
+            elif sum_insured == '300000':
+                pass
+            elif sum_insured == '400000':
+                pass
+            elif sum_insured == '500000':
+                pass
+
+def log(message):
+    print("\n ------")
+    from datetime import datetime
+    print(datetime.now())
+    print("Сообщение от {0} {1}. (id = {2}) \nТекст = {3}".format(message.from_user.first_name,
+                                                                  message.from_user.last_name,
+                                                                  str(message.from_user.id),
+                                                                  message.text))
 
 
 if __name__ == '__main__':
