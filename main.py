@@ -97,14 +97,25 @@ def dcv_suminsured_handler(call):
         dcv_suminsured = '400000'
     elif '500000' in call.data:
         dcv_suminsured = '500000'
+    print("Вибрано страхову суму {}".format(dcv_suminsured))
+    bot.send_message(call.from_user.id,
+                     "Вибрано страхову суму {}".format(dcv_suminsured))
+    
+    kb = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text='Так, все вірно', callback_data='yes')
+    btn2 = types.InlineKeyboardButton(text='Почати заново', callback_data='no')
+    kb.add(btn1, btn2)
+    
+    bot.send_message(call.from_user.id, "Вибрано зону: {}, тип авто {} та страхову суму {}".format(dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
 
 def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_suminsured):
     import json
-    with open('DCV.json') as f:
+    with open('DCV.json', encoding='utf-8') as f:
         data = json.load(f)
     if zone == 'zone1':
         if type == 'type1':
             if sum_insured == '50000':
+                print(data['zone1']['type1']['50000']['KV'][0])
                 return data['zone1']['type1']['50000']['KV'][0]
             elif sum_insured == '100000':
                 pass
@@ -183,6 +194,12 @@ def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_sumi
                 pass
             elif sum_insured == '500000':
                 pass
+
+@bot.callback_query_handler(func=lambda call: ('yes' in call.data))
+def price_and_tariff_handler(call):
+    '''выдает стоимость и КВ по введенным ранее данным'''
+    global dcv_zone, dcv_auto_type, dcv_suminsured
+    bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
 
 def log(message):
     print("\n ------")
