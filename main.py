@@ -13,16 +13,17 @@ def start(message):
     bot.send_message(message.chat.id, "Вітаю, {0}!".format(
         message.from_user.first_name))
     kb = types.InlineKeyboardMarkup()
-    itembtn1 = types.InlineKeyboardButton(text='ДЦВ',callback_data='dcv')
+    itembtn1 = types.InlineKeyboardButton(text='ДЦВ', callback_data='dcv')
     itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
-    itembtn3 = types.InlineKeyboardButton(text='НВ на транспорті', callback_data='nvnt')
+    itembtn3 = types.InlineKeyboardButton(
+        text='НВ на транспорті', callback_data='nvnt')
     kb.add(itembtn1, itembtn2, itembtn3)
     bot.send_message(
         message.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
     log(message)
 
 
-@bot.callback_query_handler(func=lambda call:'dcv' in call.data)
+@bot.callback_query_handler(func=lambda call: 'dcv' in call.data)
 def dcv_handler(call):
     '''обработчик нажатия на кнопку ДЦВ'''
     kb = types.InlineKeyboardMarkup()
@@ -36,7 +37,7 @@ def dcv_handler(call):
         call.from_user.id, "*Виберіть зону:* \nКиїв, Київська обл\. \- *1* \nХарків, Одеса, Дніпро, Львів, Запоріжжя, Кривий Ріг, ТЗ з іноземною реєстрацією \- *2* \nІнші населені пункти \- *3*",
         reply_markup=kb, parse_mode='MarkdownV2'
     )
-    
+
 
 @bot.callback_query_handler(func=lambda call: ('zone1' in call.data) or ('zone2' in call.data) or ('zone3' in call.data))
 def dcv_zone_handler(call):
@@ -60,6 +61,7 @@ def dcv_zone_handler(call):
         call.from_user.id, "*Виберіть тип ТЗ*", reply_markup=kb, parse_mode='MarkdownV2'
     )
 
+
 @bot.callback_query_handler(func=lambda call: ('type1' in call.data) or ('type2' in call.data))
 def dcv_autotype_handler(call):
     '''обрабатывает ввод типа ТС для ДЦВ'''
@@ -69,7 +71,8 @@ def dcv_autotype_handler(call):
     else:
         dcv_auto_type = 'type2'
     print("Вибрано тип авто {}".format(dcv_auto_type))
-    bot.send_message(call.from_user.id, "Вибрано зону: {} та тип авто {}".format(dcv_zone, dcv_auto_type))
+    bot.send_message(call.from_user.id, "Вибрано зону: {} та тип авто {}".format(
+        dcv_zone, dcv_auto_type))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='50 000', callback_data='50000')
     btn3 = types.InlineKeyboardButton(text='100 000', callback_data='100000')
@@ -78,10 +81,11 @@ def dcv_autotype_handler(call):
     btn6 = types.InlineKeyboardButton(text='400 000', callback_data='400000')
     btn7 = types.InlineKeyboardButton(text='500 000', callback_data='500000')
     kb.add(btn1, btn3, btn4, btn5, btn6, btn7)
-    bot.send_message(call.from_user.id, "*Виберіть страхову суму*", reply_markup=kb, parse_mode='MarkdownV2')
+    bot.send_message(call.from_user.id, "*Виберіть страхову суму*",
+                     reply_markup=kb, parse_mode='MarkdownV2')
 
 
-@bot.callback_query_handler(func=lambda call:('50000' in call.data) or ('100000' in call.data) or ('200000' in call.data) or ('300000' in call.data) or ('400000' in call.data) or ('500000' in call.data))
+@bot.callback_query_handler(func=lambda call: ('50000' in call.data) or ('100000' in call.data) or ('200000' in call.data) or ('300000' in call.data) or ('400000' in call.data) or ('500000' in call.data))
 def dcv_suminsured_handler(call):
     '''обрабатывает ввод страховой суммы для ДЦВ'''
     global dcv_suminsured
@@ -91,7 +95,7 @@ def dcv_suminsured_handler(call):
         dcv_suminsured = '100000'
     elif '200000' in call.data:
         dcv_suminsured = '200000'
-    elif '300000' in call.data: 
+    elif '300000' in call.data:
         dcv_suminsured = '300000'
     elif '400000' in call.data:
         dcv_suminsured = '400000'
@@ -100,13 +104,16 @@ def dcv_suminsured_handler(call):
     print("Вибрано страхову суму {}".format(dcv_suminsured))
     bot.send_message(call.from_user.id,
                      "Вибрано страхову суму {}".format(dcv_suminsured))
-    
+
     kb = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton(text='Так, все вірно', callback_data='yes')
+    btn1 = types.InlineKeyboardButton(
+        text='Так, все вірно', callback_data='yes')
     btn2 = types.InlineKeyboardButton(text='Почати заново', callback_data='no')
     kb.add(btn1, btn2)
-    
-    bot.send_message(call.from_user.id, "Вибрано зону: {}, тип авто {} та страхову суму {}".format(dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
+
+    bot.send_message(call.from_user.id, "Вибрано зону: {}, тип авто {} та страхову суму {}".format(
+        dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
+
 
 def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_suminsured):
     import json
@@ -115,90 +122,164 @@ def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_sumi
     if zone == 'zone1':
         if type == 'type1':
             if sum_insured == '50000':
-                print(data['zone1']['type1']['50000']['KV'][0])
-                return data['zone1']['type1']['50000']['KV'][0]
+                print(str(data['zone1']['type1']['50000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone1']['type1']['100000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone1']['type1']['200000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone1']['type1']['300000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone1']['type1']['400000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone1']['type1']['500000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type1']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type1']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type1']['500000']['KV'][1])
         elif type == 'type2':
             if sum_insured == '50000':
-                return data['zone1']['type1']['50000']['KV'][1]
+                print(str(data['zone1']['type2']['50000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone1']['type2']['100000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone1']['type2']['200000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone1']['type2']['300000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone1']['type2']['400000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone1']['type2']['500000']['KV'][0]) +
+                      ' ' + str(data['zone1']['type2']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone1']['type2']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone1']['type2']['500000']['KV'][1])
     elif zone == 'zone2':
         if type == 'type1':
             if sum_insured == '50000':
-                pass
+                print(str(data['zone2']['type1']['50000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone2']['type1']['100000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone2']['type1']['200000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone2']['type1']['300000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone2']['type1']['400000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone2']['type1']['500000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type1']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type1']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type1']['500000']['KV'][1])
         elif type == 'type2':
             if sum_insured == '50000':
-                pass
+                print(str(data['zone2']['type2']['50000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone2']['type2']['100000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone2']['type2']['200000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone2']['type2']['300000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone2']['type2']['400000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone2']['type2']['500000']['KV'][0]) +
+                      ' ' + str(data['zone2']['type2']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone2']['type2']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone2']['type2']['500000']['KV'][1])
     elif zone == 'zone3':
         if type == 'type1':
             if sum_insured == '50000':
-                pass
+                print(str(data['zone3']['type1']['50000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone3']['type1']['100000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone3']['type1']['200000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone3']['type1']['300000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone3']['type1']['400000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone3']['type1']['500000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type1']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type1']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type1']['500000']['KV'][1])
         elif type == 'type2':
             if sum_insured == '50000':
-                pass
+                print(str(data['zone3']['type2']['50000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['50000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['50000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['50000']['KV'][1])
             elif sum_insured == '100000':
-                pass
+                print(str(data['zone3']['type2']['100000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['100000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['100000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['100000']['KV'][1])
             elif sum_insured == '200000':
-                pass
+                print(str(data['zone3']['type2']['200000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['200000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['200000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['200000']['KV'][1])
             elif sum_insured == '300000':
-                pass
+                print(str(data['zone3']['type2']['300000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['300000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['300000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['300000']['KV'][1])
             elif sum_insured == '400000':
-                pass
+                print(str(data['zone3']['type2']['400000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['400000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['400000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['400000']['KV'][1])
             elif sum_insured == '500000':
-                pass
+                print(str(data['zone3']['type2']['500000']['KV'][0]) +
+                      ' ' + str(data['zone3']['type2']['500000']['KV'][1]))
+                return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['500000']['KV'][1])
+    
 
 @bot.callback_query_handler(func=lambda call: ('yes' in call.data))
 def price_and_tariff_handler(call):
     '''выдает стоимость и КВ по введенным ранее данным'''
     global dcv_zone, dcv_auto_type, dcv_suminsured
+    # res = ', '.join(get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
+    # res = 
     bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
 
 def log(message):
