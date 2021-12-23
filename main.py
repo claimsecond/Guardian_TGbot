@@ -4,7 +4,9 @@ bot = telebot.TeleBot('1850015418:AAEt9BE1gVcAdGhfyElKl2GRtN8Qt7i9Mws')
 # bot.remove_webhook()
 
 dcv_zone = 0
+zone_selected = 0
 dcv_auto_type = 0
+type_selected = 0
 dcv_suminsured = 0
 
 
@@ -14,10 +16,11 @@ def start(message):
         message.from_user.first_name))
     kb = types.InlineKeyboardMarkup()
     itembtn1 = types.InlineKeyboardButton(text='ДЦВ', callback_data='dcv')
-    itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
-    itembtn3 = types.InlineKeyboardButton(
-        text='НВ на транспорті', callback_data='nvnt')
-    kb.add(itembtn1, itembtn2, itembtn3)
+    kb.add(itembtn1)
+    # itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
+    # itembtn3 = types.InlineKeyboardButton(
+    #     text='НВ на транспорті', callback_data='nvnt')
+    # kb.add(itembtn1, itembtn2, itembtn3)
     bot.send_message(
         message.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
     log(message)
@@ -42,15 +45,18 @@ def dcv_handler(call):
 @bot.callback_query_handler(func=lambda call: ('zone1' in call.data) or ('zone2' in call.data) or ('zone3' in call.data))
 def dcv_zone_handler(call):
     '''обрабатывает выбор зоны для ДЦВ'''
-    global dcv_zone
+    global dcv_zone, zone_selected
     if 'zone1' in call.data:
         dcv_zone = 'zone1'
+        zone_selected = 'Київ, Київська обл'
     elif 'zone2' in call.data:
         dcv_zone = 'zone2'
+        zone_selected = 'Харків, Одеса, Дніпро, Львів, Запоріжжя, Кривий Ріг, ТЗ з іноземною реєстрацією'
     else:
         dcv_zone = 'zone3'
-    print("Вибрано зону: {}".format(dcv_zone))
-    bot.send_message(call.from_user.id, "Вибрано зону: {}".format(dcv_zone))
+        zone_selected = 'Інші населені пункти'
+    print("Вибрано зону: {}".format(zone_selected))
+    bot.send_message(call.from_user.id, "Вибрано зону: {}".format(zone_selected))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(
         text='A1, A2, F, B1, B2, B3, E', callback_data='type1')
@@ -65,14 +71,16 @@ def dcv_zone_handler(call):
 @bot.callback_query_handler(func=lambda call: ('type1' in call.data) or ('type2' in call.data))
 def dcv_autotype_handler(call):
     '''обрабатывает ввод типа ТС для ДЦВ'''
-    global dcv_auto_type
+    global dcv_auto_type, zone_selected, type_selected
     if 'type1' in call.data:
         dcv_auto_type = 'type1'
+        type_selected = 'A1, A2, F, B1, B2, B3, E'
     else:
         dcv_auto_type = 'type2'
-    print("Вибрано тип авто {}".format(dcv_auto_type))
+        type_selected = 'B4, C1, D1, C2, D2'
+    print("Вибрано тип авто {}".format(type_selected))
     bot.send_message(call.from_user.id, "Вибрано зону: {} та тип авто {}".format(
-        dcv_zone, dcv_auto_type))
+        zone_selected, type_selected))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='50 000', callback_data='50000')
     btn3 = types.InlineKeyboardButton(text='100 000', callback_data='100000')
@@ -88,7 +96,7 @@ def dcv_autotype_handler(call):
 @bot.callback_query_handler(func=lambda call: ('50000' in call.data) or ('100000' in call.data) or ('200000' in call.data) or ('300000' in call.data) or ('400000' in call.data) or ('500000' in call.data))
 def dcv_suminsured_handler(call):
     '''обрабатывает ввод страховой суммы для ДЦВ'''
-    global dcv_suminsured
+    global dcv_suminsured, zone_selected, type_selected
     if '50000' in call.data:
         dcv_suminsured = '50000'
     elif '100000' in call.data:
@@ -107,12 +115,12 @@ def dcv_suminsured_handler(call):
 
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(
-        text='Так, все вірно', callback_data='yes')
-    btn2 = types.InlineKeyboardButton(text='Почати заново', callback_data='no')
+        text='Так, все вірно', callback_data='yesDCV')
+    btn2 = types.InlineKeyboardButton(text='Почати заново', callback_data='noDCV')
     kb.add(btn1, btn2)
 
-    bot.send_message(call.from_user.id, "Вибрано зону: {}, тип авто {} та страхову суму {}".format(
-        dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
+    bot.send_message(call.from_user.id, "Вибрано зону: {},\n тип авто: {}\n та страхову суму: {}".format(
+        zone_selected, type_selected, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
 
 
 def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_suminsured):
@@ -274,13 +282,38 @@ def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_sumi
                 return 'Тариф та вартість поліса\n для КВ 45% - ' + str(data['zone3']['type2']['500000']['KV'][0]) + '\n для КВ 50% - ' + str(data['zone3']['type2']['500000']['KV'][1])
     
 
-@bot.callback_query_handler(func=lambda call: ('yes' in call.data))
+@bot.callback_query_handler(func=lambda call: ('yesDCV' in call.data))
 def price_and_tariff_handler(call):
     '''выдает стоимость и КВ по введенным ранее данным'''
-    global dcv_zone, dcv_auto_type, dcv_suminsured
+    global dcv_zone, dcv_auto_type, dcv_suminsured, zone_selected, type_selected
     # res = ', '.join(get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
-    # res = 
+    
     bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
+    dcv_zone = 0
+    zone_selected = 0
+    dcv_auto_type = 0
+    type_selected = 0
+    dcv_suminsured = 0
+
+@bot.callback_query_handler(func=lambda call: ('noDCV' in call.data))
+def getback_to_start_handler(call):
+    '''сбрасывает глобальные переменные и возвращает к команде /start'''
+    global dcv_zone, dcv_auto_type, dcv_suminsured, zone_selected, type_selected
+    dcv_zone = 0
+    zone_selected = 0
+    dcv_auto_type = 0
+    type_selected = 0
+    dcv_suminsured = 0
+    
+    kb = types.InlineKeyboardMarkup()
+    itembtn1 = types.InlineKeyboardButton(text='ДЦВ', callback_data='dcv')
+    itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
+    itembtn3 = types.InlineKeyboardButton(
+        text='НВ на транспорті', callback_data='nvnt')
+    kb.add(itembtn1, itembtn2, itembtn3)
+    bot.send_message(
+        call.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
+    
 
 def log(message):
     print("\n ------")
