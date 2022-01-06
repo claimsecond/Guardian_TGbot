@@ -97,8 +97,8 @@ def dcv_autotype_handler(call):
 def dcv_suminsured_handler(call):
     '''обрабатывает ввод страховой суммы для ДЦВ'''
     global dcv_suminsured, zone_selected, type_selected
-    if '50000' in call.data:
-        dcv_suminsured = '50000'
+    if '500000' in call.data:
+        dcv_suminsured = '500000'
     elif '100000' in call.data:
         dcv_suminsured = '100000'
     elif '200000' in call.data:
@@ -107,8 +107,8 @@ def dcv_suminsured_handler(call):
         dcv_suminsured = '300000'
     elif '400000' in call.data:
         dcv_suminsured = '400000'
-    elif '500000' in call.data:
-        dcv_suminsured = '500000'
+    elif '50000' in call.data:
+        dcv_suminsured = '50000'
     print("Вибрано страхову суму {}".format(dcv_suminsured))
     bot.send_message(call.from_user.id,
                      "Вибрано страхову суму {}".format(dcv_suminsured))
@@ -307,10 +307,10 @@ def getback_to_start_handler(call):
     
     kb = types.InlineKeyboardMarkup()
     itembtn1 = types.InlineKeyboardButton(text='ДЦВ', callback_data='dcv')
-    itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
-    itembtn3 = types.InlineKeyboardButton(
-        text='НВ на транспорті', callback_data='nvnt')
-    kb.add(itembtn1, itembtn2, itembtn3)
+    # itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
+    # itembtn3 = types.InlineKeyboardButton(
+    #     text='НВ на транспорті', callback_data='nvnt')
+    kb.add(itembtn1)
     bot.send_message(
         call.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
     
