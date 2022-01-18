@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\Python310\\python.exe",
+    "python.pythonPath": "TGbot\\Scripts\\python.exe",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
 }

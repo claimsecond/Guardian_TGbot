@@ -284,16 +284,24 @@ def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_sumi
 
 @bot.callback_query_handler(func=lambda call: ('yesDCV' in call.data))
 def price_and_tariff_handler(call):
-    '''выдает стоимость и КВ по введенным ранее данным'''
+    '''выдает стоимость и КВ по введенным ранее данным и выводит кнопку нового расчета'''
     global dcv_zone, dcv_auto_type, dcv_suminsured, zone_selected, type_selected
     # res = ', '.join(get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
     
-    bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
+    kb = types.InlineKeyboardMarkup()
+    itembtn1 = types.InlineKeyboardButton(text='Новий розрахунок ДЦВ', callback_data='dcv')
+    # itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
+    # itembtn3 = types.InlineKeyboardButton(
+    #     text='НВ на транспорті', callback_data='nvnt')
+    kb.add(itembtn1)
+
+    bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb)
     dcv_zone = 0
     zone_selected = 0
     dcv_auto_type = 0
     type_selected = 0
     dcv_suminsured = 0
+    
 
 @bot.callback_query_handler(func=lambda call: ('noDCV' in call.data))
 def getback_to_start_handler(call):
@@ -305,6 +313,8 @@ def getback_to_start_handler(call):
     type_selected = 0
     dcv_suminsured = 0
     
+    print("Розрахунок розпочато заново.")
+
     kb = types.InlineKeyboardMarkup()
     itembtn1 = types.InlineKeyboardButton(text='ДЦВ', callback_data='dcv')
     # itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
