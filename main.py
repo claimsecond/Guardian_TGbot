@@ -1,7 +1,10 @@
 import telebot
+import settings
 from telebot import types
-bot = telebot.TeleBot('1850015418:AAEt9BE1gVcAdGhfyElKl2GRtN8Qt7i9Mws')
+bot = telebot.TeleBot(settings.TOKEN)
+from SQLighter import set_user_state, init_db
 # bot.remove_webhook()
+
 
 dcv_zone = 0
 zone_selected = 0
@@ -12,6 +15,7 @@ dcv_suminsured = 0
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    '''обработчик команды старт'''
     bot.send_message(message.chat.id, "Вітаю, {0}!".format(
         message.from_user.first_name))
     kb = types.InlineKeyboardMarkup()
@@ -21,8 +25,13 @@ def start(message):
     # itembtn3 = types.InlineKeyboardButton(
     #     text='НВ на транспорті', callback_data='nvnt')
     # kb.add(itembtn1, itembtn2, itembtn3)
+
     bot.send_message(
         message.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
+    
+    init_db()
+    set_user_state(user_id=message.from_user.id, state=settings.S_INIT)
+
     log(message)
 
 
