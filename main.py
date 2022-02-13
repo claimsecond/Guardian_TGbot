@@ -2,7 +2,7 @@ import telebot
 import settings
 from telebot import types
 bot = telebot.TeleBot(settings.TOKEN)
-from SQLighter import set_user_state, init_db
+from SQLighter import get_user_state, set_user_state, init_db
 # bot.remove_webhook()
 
 
@@ -31,6 +31,7 @@ def start(message):
     
     init_db()
     set_user_state(user_id=message.from_user.id, state=settings.S_INIT)
+    print(get_user_state(user_id=message.from_user.id))
 
     log(message)
 

@@ -56,3 +56,21 @@ def set_user_state(conn, user_id: int, state: str):
         print(e)
         
     conn.commit()
+
+@ensure_connection
+def get_user_state(conn, user_id: int):
+    c = conn.cursor()
+    c.execute('SELECT state FROM users WHERE userid = ?', (user_id,))
+    data = c.fetchone()
+    return data
+    
+
+# @ensure_connection
+# def test_DB_func(conn):
+#     c = conn.cursor()
+#     c.execute("SELECT state FROM users WHERE userid = {userid}".format(userid=1111111))
+#     data = c.fetchone()
+#     return data
+    
+
+   
