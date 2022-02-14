@@ -5,6 +5,7 @@ import settings
 def ensure_connection(func):
     '''Декортаор подключения к БД. 
     открывает соединение, выполняет переданную функцию, закрывает соединение
+    DB_NAME указывается в файле settings.py
     Взято отсюда https://bitbucket.org/vkasatkin/tele_bot/src/master/archive_bot/db.py'''
 
     def inner(*args, **kwargs):
@@ -30,47 +31,60 @@ def init_db(conn, force: bool = False):
         c.execute('DROP TABLE IF EXISTS users')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS users(
-            ID     INTEGER PRIMARY KEY AUTOINCREMENT
-                   NOT NULL,
-            userid INT     NOT NULL,
-            state  STRING  NOT NULL
+    CREATE TABLE IF NOT EXISTS users(
+    ID             INTEGER PRIMARY KEY AUTOINCREMENT
+                           NOT NULL,
+    userid         INT     NOT NULL,
+    dcv_zone       STRING  DEFAULT NULL,
+    dcv_auto_type  STRING  DEFAULT NULL,
+    dcv_suminsured STRING  DEFAULT NULL
         );
     ''')
     # сохранить изменения
     conn.commit()
 
+
 @ensure_connection
-def set_user_state(conn, user_id: int, state: str):
+def check_user_exists(conn, user_id: int):
+    '''check if user exists in db, if not - write user id into the db'''
     c = conn.cursor()
     c.execute('SELECT * FROM users WHERE userid = ?', (user_id,))
     if c.fetchone() == None:
+        # если пользователь с таким ID не найден, создаем запись в БД для данного ID
         try: 
-            c.execute('INSERT INTO users(userid, state) VALUES (?,?)', (user_id, state))
+            c.execute('INSERT INTO users(userid) VALUES (?)', (user_id,))
+        except Error as e:
+            print(e)
+    # проверяем что пользователь создан, если создан - возвращаем его ID
+    c.execute('SELECT * FROM users WHERE userid = ?', (user_id,))
+    data = c.fetchone()[1]
+            
+    conn.commit()
+    return data
+
+
+@ensure_connection
+def get_user_state(conn, user_id: int, col: str):
+    '''gets state for selected col'''
+    if check_user_exists(user_id=user_id) != None: 
+        c = conn.cursor()
+        c.execute('SELECT * FROM users WHERE userid = ?', (user_id,))
+        data = c.fetchone()[col]
+        return data
+
+
+@ensure_connection
+def set_user_state(conn, user_id: int, col: str, state: str):
+    if check_user_exists(user_id=user_id) != None: 
+        c = conn.cursor()
+        try: 
+            c.execute('UPDATE users SET ? = ? WHERE userid = ?', (col, state, user_id))
         except Error as e:
             print(e)
 
-    try: 
-        c.execute('UPDATE users SET state = ? WHERE userid = ?', (state, user_id))
-    except Error as e:
-        print(e)
-        
-    conn.commit()
 
-@ensure_connection
-def get_user_state(conn, user_id: int):
-    c = conn.cursor()
-    c.execute('SELECT state FROM users WHERE userid = ?', (user_id,))
-    data = c.fetchone()
-    return data
-    
 
-# @ensure_connection
-# def test_DB_func(conn):
-#     c = conn.cursor()
-#     c.execute("SELECT state FROM users WHERE userid = {userid}".format(userid=1111111))
-#     data = c.fetchone()
-#     return data
+
     
 
    
