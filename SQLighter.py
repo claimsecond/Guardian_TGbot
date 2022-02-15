@@ -78,7 +78,7 @@ def set_user_state(conn, user_id: int, col: str, state: str):
     if check_user_exists(user_id=user_id) != None: 
         c = conn.cursor()
         try: 
-            c.execute('UPDATE users SET ? = ? WHERE userid = ?', (col, state, user_id))
+            c.execute(f'UPDATE users SET {col} = ? WHERE userid = ?', (state, user_id))
         except Error as e:
             print(e)
 
