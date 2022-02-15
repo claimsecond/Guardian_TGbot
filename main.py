@@ -1,16 +1,11 @@
+from os import stat
 import telebot
 import settings
 from telebot import types
+from SQLighter import delete_user, get_user_state, check_user_exists, set_user_state, init_db
 bot = telebot.TeleBot(settings.TOKEN)
-from SQLighter import get_user_state, set_user_state, init_db
+
 # bot.remove_webhook()
-
-
-dcv_zone = 0
-zone_selected = 0
-dcv_auto_type = 0
-type_selected = 0
-dcv_suminsured = 0
 
 
 @bot.message_handler(commands=['start'])
@@ -30,8 +25,8 @@ def start(message):
         message.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
     
     init_db()
-    set_user_state(user_id=message.from_user.id, state=settings.S_INIT)
-    print(get_user_state(user_id=message.from_user.id))
+    check_user_exists(user_id=message.from_user.id)
+    
 
     log(message)
 
@@ -55,18 +50,18 @@ def dcv_handler(call):
 @bot.callback_query_handler(func=lambda call: ('zone1' in call.data) or ('zone2' in call.data) or ('zone3' in call.data))
 def dcv_zone_handler(call):
     '''обрабатывает выбор зоны для ДЦВ'''
-    global dcv_zone, zone_selected
+    
     if 'zone1' in call.data:
-        dcv_zone = 'zone1'
-        zone_selected = 'Київ, Київська обл'
+        set_user_state(user_id=call.from_user.id,col='dcv_zone',state='zone1')
+        set_user_state(user_id=call.from_user.id,col='zone_selected',state='Київ, Київська обл')
     elif 'zone2' in call.data:
-        dcv_zone = 'zone2'
-        zone_selected = 'Харків, Одеса, Дніпро, Львів, Запоріжжя, Кривий Ріг, ТЗ з іноземною реєстрацією'
+        set_user_state(user_id=call.from_user.id,col='dcv_zone',state='zone2')
+        set_user_state(user_id=call.from_user.id,col='zone_selected',state='Харків, Одеса, Дніпро, Львів, Запоріжжя, Кривий Ріг, ТЗ з іноземною реєстрацією')
     else:
-        dcv_zone = 'zone3'
-        zone_selected = 'Інші населені пункти'
-    print("Вибрано зону: {}".format(zone_selected))
-    bot.send_message(call.from_user.id, "Вибрано зону: {}".format(zone_selected))
+        set_user_state(user_id=call.from_user.id,col='dcv_zone',state='zone3')
+        set_user_state(user_id=call.from_user.id,col='zone_selected',state='Інші населені пункти')
+    print("Вибрано зону: {}".format(get_user_state(user_id=call.from_user.id,col=3)))
+    bot.send_message(call.from_user.id, "Вибрано зону: {}".format(get_user_state(user_id=call.from_user.id,col=3)))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(
         text='A1, A2, F, B1, B2, B3, E', callback_data='type1')
@@ -81,16 +76,16 @@ def dcv_zone_handler(call):
 @bot.callback_query_handler(func=lambda call: ('type1' in call.data) or ('type2' in call.data))
 def dcv_autotype_handler(call):
     '''обрабатывает ввод типа ТС для ДЦВ'''
-    global dcv_auto_type, zone_selected, type_selected
+    
     if 'type1' in call.data:
-        dcv_auto_type = 'type1'
-        type_selected = 'A1, A2, F, B1, B2, B3, E'
+        set_user_state(user_id=call.from_user.id,col='dcv_auto_type',state='type1')
+        set_user_state(user_id=call.from_user.id,col='type_selected',state='A1, A2, F, B1, B2, B3, E')
     else:
-        dcv_auto_type = 'type2'
-        type_selected = 'B4, C1, D1, C2, D2'
-    print("Вибрано тип авто {}".format(type_selected))
+        set_user_state(user_id=call.from_user.id,col='dcv_auto_type',state='type2')
+        set_user_state(user_id=call.from_user.id,col='type_selected',state='B4, C1, D1, C2, D2')
+    print("Вибрано тип авто {}".format(get_user_state(user_id=call.from_user.id,col=5)))
     bot.send_message(call.from_user.id, "Вибрано зону: {} та тип авто {}".format(
-        zone_selected, type_selected))
+        get_user_state(user_id=call.from_user.id,col=3), get_user_state(user_id=call.from_user.id,col=5)))
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(text='50 000', callback_data='50000')
     btn3 = types.InlineKeyboardButton(text='100 000', callback_data='100000')
@@ -106,22 +101,22 @@ def dcv_autotype_handler(call):
 @bot.callback_query_handler(func=lambda call: ('50000' in call.data) or ('100000' in call.data) or ('200000' in call.data) or ('300000' in call.data) or ('400000' in call.data) or ('500000' in call.data))
 def dcv_suminsured_handler(call):
     '''обрабатывает ввод страховой суммы для ДЦВ'''
-    global dcv_suminsured, zone_selected, type_selected
+    
     if '500000' in call.data:
-        dcv_suminsured = '500000'
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='500000')
     elif '100000' in call.data:
-        dcv_suminsured = '100000'
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='100000')
     elif '200000' in call.data:
-        dcv_suminsured = '200000'
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='200000')
     elif '300000' in call.data:
-        dcv_suminsured = '300000'
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='300000')
     elif '400000' in call.data:
-        dcv_suminsured = '400000'
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='400000')
     elif '50000' in call.data:
-        dcv_suminsured = '50000'
-    print("Вибрано страхову суму {}".format(dcv_suminsured))
+        set_user_state(user_id=call.from_user.id,col='dcv_suminsured',state='50000')
+    print("Вибрано страхову суму {}".format(get_user_state(user_id=call.from_user.id,col=6)))
     bot.send_message(call.from_user.id,
-                     "Вибрано страхову суму {}".format(dcv_suminsured))
+                     "Вибрано страхову суму {}".format(get_user_state(user_id=call.from_user.id,col=6)))
 
     kb = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(
@@ -130,13 +125,21 @@ def dcv_suminsured_handler(call):
     kb.add(btn1, btn2)
 
     bot.send_message(call.from_user.id, "Вибрано зону: {},\n тип авто: {}\n та страхову суму: {}".format(
-        zone_selected, type_selected, dcv_suminsured), reply_markup=kb, parse_mode='MarkdownV2')
+        get_user_state(user_id=call.from_user.id,col=3), 
+        get_user_state(user_id=call.from_user.id,col=5), 
+        get_user_state(user_id=call.from_user.id,col=6)
+        ), 
+        reply_markup=kb, parse_mode='MarkdownV2')
 
 
-def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_suminsured):
+def get_price_and_tariff_for(user_id: int):
     import json
     with open('DCV.json', encoding='utf-8') as f:
         data = json.load(f)
+    zone = str(get_user_state(user_id=user_id,col=2))
+    type = str(get_user_state(user_id=user_id,col=4))
+    sum_insured = str(get_user_state(user_id=user_id,col=6))
+    
     if zone == 'zone1':
         if type == 'type1':
             if sum_insured == '50000':
@@ -295,9 +298,7 @@ def get_price_and_tariff(zone=dcv_zone, type=dcv_auto_type, sum_insured=dcv_sumi
 @bot.callback_query_handler(func=lambda call: ('yesDCV' in call.data))
 def price_and_tariff_handler(call):
     '''выдает стоимость и КВ по введенным ранее данным и выводит кнопку нового расчета'''
-    global dcv_zone, dcv_auto_type, dcv_suminsured, zone_selected, type_selected
-    # res = ', '.join(get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured))
-    
+      
     kb = types.InlineKeyboardMarkup()
     itembtn1 = types.InlineKeyboardButton(text='Новий розрахунок ДЦВ', callback_data='dcv')
     # itembtn2 = types.InlineKeyboardButton(text='ОСЦПВ', callback_data='oscpv')
@@ -305,24 +306,15 @@ def price_and_tariff_handler(call):
     #     text='НВ на транспорті', callback_data='nvnt')
     kb.add(itembtn1)
 
-    bot.send_message(call.from_user.id, get_price_and_tariff(dcv_zone, dcv_auto_type, dcv_suminsured), reply_markup=kb)
-    dcv_zone = 0
-    zone_selected = 0
-    dcv_auto_type = 0
-    type_selected = 0
-    dcv_suminsured = 0
+    bot.send_message(call.from_user.id, get_price_and_tariff_for(user_id=call.from_user.id), reply_markup=kb)
     
+    delete_user(user_id=call.from_user.id)
 
 @bot.callback_query_handler(func=lambda call: ('noDCV' in call.data))
 def getback_to_start_handler(call):
-    '''сбрасывает глобальные переменные и возвращает к команде /start'''
-    global dcv_zone, dcv_auto_type, dcv_suminsured, zone_selected, type_selected
-    dcv_zone = 0
-    zone_selected = 0
-    dcv_auto_type = 0
-    type_selected = 0
-    dcv_suminsured = 0
-    
+    '''удаляет статусы для данного userID и возвращает к команде /start'''
+
+    delete_user(user_id=call.from_user.id)
     print("Розрахунок розпочато заново.")
 
     kb = types.InlineKeyboardMarkup()
@@ -333,6 +325,8 @@ def getback_to_start_handler(call):
     kb.add(itembtn1)
     bot.send_message(
         call.from_user.id, "Цей бот призначений для швидкого розрахунку страхової премії. Для початку роботи натисніть на кнопку.", reply_markup=kb)
+    init_db()
+    check_user_exists(user_id=call.from_user.id)
     
 
 def log(message):

@@ -141,3 +141,5 @@ cython_debug/
 
 
 .vscode/settings.json
+settings.py
+users.db

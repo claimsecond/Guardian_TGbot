@@ -1,3 +1,4 @@
+from pprint import isreadable
 import sqlite3
 from sqlite3 import Error
 import settings
@@ -36,9 +37,11 @@ def init_db(conn, force: bool = False):
                            NOT NULL,
     userid         INT     NOT NULL,
     dcv_zone       STRING  DEFAULT NULL,
+    zone_selected  STRING  DEFAULT NULL,
     dcv_auto_type  STRING  DEFAULT NULL,
+    type_selected  STRING  DEFAULT NULL,
     dcv_suminsured STRING  DEFAULT NULL
-        );
+    );
     ''')
     # сохранить изменения
     conn.commit()
@@ -82,6 +85,14 @@ def set_user_state(conn, user_id: int, col: str, state: str):
         except Error as e:
             print(e)
 
+@ensure_connection
+def delete_user(conn, user_id: int):
+    if check_user_exists(user_id=user_id) != None: 
+        c = conn.cursor()
+        try: 
+            c.execute(f'DELETE FROM users WHERE userid = ?', (user_id,))
+        except Error as e:
+            print(e)
 
 
 
