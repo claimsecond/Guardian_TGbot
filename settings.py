@@ -1,6 +1,4 @@
-TOKEN = '1850015418:AAEt9BE1gVcAdGhfyElKl2GRtN8Qt7i9Mws'
+TOKEN = 'YOUR_TOKEN_HERE'
 DB_NAME = 'users.db'
 
-# STATES 
 
-S_INIT = 'start'
